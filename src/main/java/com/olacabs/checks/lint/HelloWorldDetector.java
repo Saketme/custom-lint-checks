@@ -1,4 +1,8 @@
-package de.ad.android.tools.lint;
+package com.olacabs.checks.lint;
+
+import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
+import static com.android.SdkConstants.ATTR_LABEL;
+import static com.android.SdkConstants.TAG_APPLICATION;
 
 import com.android.annotations.NonNull;
 import com.android.tools.lint.detector.api.Category;
@@ -13,11 +17,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-
-import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
-import static com.android.SdkConstants.ATTR_LABEL;
-import static com.android.SdkConstants.TAG_APPLICATION;
 
 /**
  * Check which determines if application title equals "Hello world"
