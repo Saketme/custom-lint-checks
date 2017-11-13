@@ -4,28 +4,23 @@ version = '1.0.0'
 
 repositories {
     jcenter()
-    maven {
-        url  'https://dl.bintray.com/android/android-tools'
-    }
 }
 
 ext.versions = [
-        lint: '25.3.0',
+        androidTools: '26.0.0',
 ]
 
 dependencies {
-    compile "com.android.tools.lint:lint:$versions.lint"
-    compile "com.android.tools.lint:lint-api:$versions.lint"
-    compile "com.android.tools.lint:lint-checks:$versions.lint"
+    compileOnly "com.android.tools.lint:lint-api:$versions.androidTools"
+    compileOnly "com.android.tools.lint:lint-checks:$versions.androidTools"
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.assertj:assertj-core:3.0.0'
-    testCompile "com.android.tools.lint:lint-tests:$versions.lint"
+    testImplementation "com.android.tools.lint:lint:${versions.androidTools}"
+    testImplementation "com.android.tools.lint:lint-checks:${versions.androidTools}"
 }
 
 jar {
     archiveName 'OlaChecks-v2.jar'
     manifest {
-        attributes 'Lint-Registry': 'com.olacabs.checks.lint.LintIssueRegistry'
+        attributes 'Lint-Registry-v2': 'com.olacabs.checks.lint.LintIssueRegistry'
     }
 }
