@@ -11,11 +11,11 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class LintIssueRegistry extends IssueRegistry {
 
-    public LintIssueRegistry() {
-    }
+  public LintIssueRegistry() {
+  }
 
-    @Override
-    public List<Issue> getIssues() {
-        return Collections.singletonList(RxCheckResultAnnotationEnforcer.ISSUE);
-    }
+  @Override
+  public List<Issue> getIssues() {
+    return Collections.singletonList(RxCheckResultAnnotationEnforcer.ISSUE);
+  }
 }

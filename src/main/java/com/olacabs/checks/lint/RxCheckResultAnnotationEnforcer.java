@@ -22,101 +22,101 @@ import org.jetbrains.uast.UMethod;
  */
 public class RxCheckResultAnnotationEnforcer extends Detector implements Detector.UastScanner {
 
-    private static final String ISSUE_ID = RxCheckResultAnnotationEnforcer.class.getSimpleName();
-    private static final String ISSUE_TITLE = "Use @CheckResult";
-    private static final String ISSUE_DESCRIPTION =
-            "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
-                    + "@CheckReturn so that AndroidStudio shows a warning when the return value is not used.";
-    private static final int ISSUE_PRIORITY = 10;   // Highest.
-    public static final Severity SEVERITY = Severity.ERROR;
+  private static final String ISSUE_ID = RxCheckResultAnnotationEnforcer.class.getSimpleName();
+  private static final String ISSUE_TITLE = "Use @CheckResult";
+  private static final String ISSUE_DESCRIPTION =
+      "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
+          + "@CheckReturn so that AndroidStudio shows a warning when the return value is not used.";
+  private static final int ISSUE_PRIORITY = 10;   // Highest.
+  public static final Severity SEVERITY = Severity.ERROR;
 
-    private static final Set<String> RX_PRIMITIVE_CANONICAL_NAMES = new HashSet<>();
+  private static final Set<String> RX_PRIMITIVE_CANONICAL_NAMES = new HashSet<>();
 
-    static {
-        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Observable");
-        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Single");
-        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Completable");
-        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Maybe");
-        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Flowable");
-    }
+  static {
+    RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Observable");
+    RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Single");
+    RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Completable");
+    RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Maybe");
+    RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Flowable");
+  }
 
-    public static final Issue ISSUE = Issue.create(
-            ISSUE_ID,
-            ISSUE_TITLE,
-            ISSUE_DESCRIPTION,
-            Category.CORRECTNESS,
-            ISSUE_PRIORITY,
-            SEVERITY,
-            new Implementation(RxCheckResultAnnotationEnforcer.class, Scope.JAVA_FILE_SCOPE)
-    );
+  public static final Issue ISSUE = Issue.create(
+      ISSUE_ID,
+      ISSUE_TITLE,
+      ISSUE_DESCRIPTION,
+      Category.CORRECTNESS,
+      ISSUE_PRIORITY,
+      SEVERITY,
+      new Implementation(RxCheckResultAnnotationEnforcer.class, Scope.JAVA_FILE_SCOPE)
+  );
 
-    public RxCheckResultAnnotationEnforcer() {
-    }
+  public RxCheckResultAnnotationEnforcer() {
+  }
 
-    @Override
-    public EnumSet<Scope> getApplicableFiles() {
-        return Scope.JAVA_FILE_SCOPE;
-    }
+  @Override
+  public EnumSet<Scope> getApplicableFiles() {
+    return Scope.JAVA_FILE_SCOPE;
+  }
 
-    @Override
-    public List<Class<? extends UElement>> getApplicableUastTypes() {
-        return Collections.singletonList(UMethod.class);
-    }
+  @Override
+  public List<Class<? extends UElement>> getApplicableUastTypes() {
+    return Collections.singletonList(UMethod.class);
+  }
 
-    @Override
-    public UElementHandler createUastHandler(JavaContext context) {
-        return new UElementHandler() {
-            @Override
-            public void visitMethod(UMethod method) {
-                if (method.getReturnType() == null || PsiType.VOID.equals(method.getReturnType())) {
-                    // Constructor or void return type.
-                    return;
-                }
+  @Override
+  public UElementHandler createUastHandler(JavaContext context) {
+    return new UElementHandler() {
+      @Override
+      public void visitMethod(UMethod method) {
+        if (method.getReturnType() == null || PsiType.VOID.equals(method.getReturnType())) {
+          // Constructor or void return type.
+          return;
+        }
 
-                boolean isRxReturnType = isReturnValueRxPrimitive(method.getReturnType());
-                if (!isRxReturnType) {
-                    return;
-                }
+        boolean isRxReturnType = isReturnValueRxPrimitive(method.getReturnType());
+        if (!isRxReturnType) {
+          return;
+        }
 
-                boolean isCheckReturnAnnotationMissing = method.findAnnotation("android.support.annotation.CheckResult") == null;
-                if (isCheckReturnAnnotationMissing) {
-                    context.report(ISSUE, method, context.getLocation(method), "Should annotate return value with @CheckResult");
-                }
-            }
+        boolean isCheckReturnAnnotationMissing = method.findAnnotation("android.support.annotation.CheckResult") == null;
+        if (isCheckReturnAnnotationMissing) {
+          context.report(ISSUE, method, context.getLocation(method), "Should annotate return value with @CheckResult");
+        }
+      }
 
-            private boolean isReturnValueRxPrimitive(PsiType returnType) {
-                String returnTypeName = removeTypeFromClassName(returnType.getCanonicalText());
-                return RX_PRIMITIVE_CANONICAL_NAMES.contains(returnTypeName) || hasRxSuperType(returnType);
-            }
+      private boolean isReturnValueRxPrimitive(PsiType returnType) {
+        String returnTypeName = removeTypeFromClassName(returnType.getCanonicalText());
+        return RX_PRIMITIVE_CANONICAL_NAMES.contains(returnTypeName) || hasRxSuperType(returnType);
+      }
 
-            /**
-             * Check if a PsiType has an Rx primitive as its super class, by walking up the class hierarchy.
-             */
-            private boolean hasRxSuperType(PsiType psiType) {
-                // PsiType#getSuperTypes() returns the super class and any interfaces this PsiType implements.
-                // We're assuming that the super class will always be present in the 0th index.
-                PsiType[] superTypes = psiType.getSuperTypes();
-                PsiType nextSuperClassType = superTypes[0];
+      /**
+       * Check if a PsiType has an Rx primitive as its super class, by walking up the class hierarchy.
+       */
+      private boolean hasRxSuperType(PsiType psiType) {
+        // PsiType#getSuperTypes() returns the super class and any interfaces this PsiType implements.
+        // We're assuming that the super class will always be present in the 0th index.
+        PsiType[] superTypes = psiType.getSuperTypes();
+        PsiType nextSuperClassType = superTypes[0];
 
-                while (superTypes.length > 0 && !"java.lang.Object".equals(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
-                    if (RX_PRIMITIVE_CANONICAL_NAMES.contains(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
-                        return true;
-                    }
-                    nextSuperClassType = nextSuperClassType.getSuperTypes()[0];
-                }
+        while (superTypes.length > 0 && !"java.lang.Object".equals(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
+          if (RX_PRIMITIVE_CANONICAL_NAMES.contains(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
+            return true;
+          }
+          nextSuperClassType = nextSuperClassType.getSuperTypes()[0];
+        }
 
-                return false;
-            }
-        };
-    }
+        return false;
+      }
+    };
+  }
 
-    /**
-     * Convert strings like {@code "io.reactivex.Observable<Object>"} to {@code "io.reactivex.Observable"}.
-     */
-    public static String removeTypeFromClassName(String className) {
-        int typeStartIndex = className.indexOf("<");
-        return typeStartIndex != -1
-                ? className.substring(0, typeStartIndex)
-                : className;
-    }
+  /**
+   * Convert {@code "io.reactivex.Observable<Object>"} to {@code "io.reactivex.Observable"}.
+   */
+  public static String removeTypeFromClassName(String className) {
+    int typeStartIndex = className.indexOf("<");
+    return typeStartIndex != -1
+        ? className.substring(0, typeStartIndex)
+        : className;
+  }
 }
