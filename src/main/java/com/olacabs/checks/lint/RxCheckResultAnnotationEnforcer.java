@@ -14,7 +14,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.UMethod;
 
@@ -74,15 +73,13 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
                     return;
                 }
 
-                boolean isRxPrimitiveReturnValue = isReturnValueRxPrimitive(method.getReturnType());
-                if (!isRxPrimitiveReturnValue) {
+                boolean isRxReturnType = isReturnValueRxPrimitive(method.getReturnType());
+                if (!isRxReturnType) {
                     return;
                 }
 
-                UAnnotation checkResultAnnotation = method.findAnnotation("android.support.annotation.CheckResult");
-                boolean hasCheckReturnAnnotation = checkResultAnnotation != null;
-
-                if (!hasCheckReturnAnnotation) {
+                boolean isCheckReturnAnnotationMissing = method.findAnnotation("android.support.annotation.CheckResult") == null;
+                if (isCheckReturnAnnotationMissing) {
                     context.report(ISSUE, method, context.getLocation(method), "Should annotate return value with @CheckResult");
                 }
             }
