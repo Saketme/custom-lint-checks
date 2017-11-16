@@ -19,7 +19,7 @@ import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.UMethod;
 
 /**
- * TODO: Doc.
+ * Throws lint errors if methods returning Rx primitives (Observable, Single, etc.) are found without @CheckResult annotation.
  */
 public class RxCheckResultAnnotationEnforcer extends Detector implements Detector.UastScanner {
 
@@ -113,6 +113,9 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
         };
     }
 
+    /**
+     * Convert strings like {@code "io.reactivex.Observable<Object>"} to {@code "io.reactivex.Observable"}.
+     */
     public static String removeTypeFromClassName(String className) {
         int typeStartIndex = className.indexOf("<");
         return typeStartIndex != -1
