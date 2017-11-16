@@ -1,4 +1,5 @@
 #!/bin/sh
+# Builds a jar for the lint checks and installs it to the lint directory so that it runs for all Android projects.
 
 # Build .jar
 ./gradlew clean assemble

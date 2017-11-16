@@ -1,6 +1,6 @@
 package com.olacabs.checks.lint;
 
-import com.android.annotations.Nullable;
+import com.android.tools.lint.client.api.UElementHandler;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Implementation;
@@ -8,42 +8,37 @@ import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
-import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UMethod;
 
 /**
  * TODO: Doc.
  */
-public class RxCheckResultAnnotationEnforcer extends Detector implements Detector.JavaPsiScanner {
+public class RxCheckResultAnnotationEnforcer extends Detector implements Detector.UastScanner {
 
     private static final String ISSUE_ID = RxCheckResultAnnotationEnforcer.class.getSimpleName();
     private static final String ISSUE_TITLE = "Use @CheckResult";
     private static final String ISSUE_DESCRIPTION =
             "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
                     + "@CheckReturn so that AndroidStudio shows a warning when the return value is not used.";
-    private static final int ISSUE_PRIORITY = 10;
+    private static final int ISSUE_PRIORITY = 10;   // Highest.
+    public static final Severity SEVERITY = Severity.ERROR;
 
-    private static final Set<String> RX_PRIMITIVES = new HashSet<>();
+    private static final Set<String> RX_PRIMITIVE_CANONICAL_NAMES = new HashSet<>();
 
     static {
-        RX_PRIMITIVES.add("io.reactivex.ObservableSource");
-        RX_PRIMITIVES.add("io.reactivex.Observable");
-        RX_PRIMITIVES.add("io.reactivex.SingleSource");
-        RX_PRIMITIVES.add("io.reactivex.Single");
-        RX_PRIMITIVES.add("io.reactivex.CompletableSource");
-        RX_PRIMITIVES.add("io.reactivex.Completable");
-        RX_PRIMITIVES.add("io.reactivex.MaybeSource");
-        RX_PRIMITIVES.add("io.reactivex.Maybe");
-        RX_PRIMITIVES.add("org.reactivestreams.Publisher");
-        RX_PRIMITIVES.add("io.reactivex.Flowable");
+        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Observable");
+        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Single");
+        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Completable");
+        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Maybe");
+        RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Flowable");
     }
 
     public static final Issue ISSUE = Issue.create(
@@ -52,7 +47,7 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
             ISSUE_DESCRIPTION,
             Category.CORRECTNESS,
             ISSUE_PRIORITY,
-            Severity.ERROR,
+            SEVERITY,
             new Implementation(RxCheckResultAnnotationEnforcer.class, Scope.JAVA_FILE_SCOPE)
     );
 
@@ -65,54 +60,64 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
     }
 
     @Override
-    public List<Class<? extends PsiElement>> getApplicablePsiTypes() {
-        return Collections.singletonList(PsiMethod.class);
+    public List<Class<? extends UElement>> getApplicableUastTypes() {
+        return Collections.singletonList(UMethod.class);
     }
 
     @Override
-    public JavaElementVisitor createPsiVisitor(JavaContext context) {
-        return new JavaElementVisitor() {
+    public UElementHandler createUastHandler(JavaContext context) {
+        return new UElementHandler() {
             @Override
-            public void visitMethod(PsiMethod method) {
+            public void visitMethod(UMethod method) {
+                if (method.getReturnType() == null || PsiType.VOID.equals(method.getReturnType())) {
+                    // Constructor or void return type.
+                    return;
+                }
+
                 boolean isRxPrimitiveReturnValue = isReturnValueRxPrimitive(method.getReturnType());
                 if (!isRxPrimitiveReturnValue) {
                     return;
                 }
 
-                boolean hasCheckReturnAnnotation = false;
-                for (PsiAnnotation methodAnnotation : context.getEvaluator().getAllAnnotations(method, true)) {
-                    //noinspection ConstantConditions
-                    if (methodAnnotation.getQualifiedName().equals("android.support.annotation.CheckResult")) {
-                        hasCheckReturnAnnotation = true;
-                        break;
-                    }
-                }
+                UAnnotation checkResultAnnotation = method.findAnnotation("android.support.annotation.CheckResult");
+                boolean hasCheckReturnAnnotation = checkResultAnnotation != null;
 
                 if (!hasCheckReturnAnnotation) {
                     context.report(ISSUE, method, context.getLocation(method), "Should annotate return value with @CheckResult");
                 }
             }
 
-            private boolean isReturnValueRxPrimitive(@Nullable PsiType returnValueType) {
-                if (returnValueType != null) {
-                    if (RX_PRIMITIVES.contains(returnValueType.getPresentableText())) {
+            private boolean isReturnValueRxPrimitive(PsiType returnType) {
+                String returnTypeName = removeTypeFromClassName(returnType.getCanonicalText());
+                return RX_PRIMITIVE_CANONICAL_NAMES.contains(returnTypeName) || hasRxSuperType(returnType);
+            }
+
+            /**
+             * Check if a PsiType has an Rx primitive as its super class, by walking up the class hierarchy.
+             */
+            private boolean hasRxSuperType(PsiType psiType) {
+                // PsiType#getSuperTypes() returns the super class and any interfaces this PsiType implements.
+                // We're assuming that the super class will always be present in the 0th index.
+                PsiType[] superTypes = psiType.getSuperTypes();
+                PsiType nextSuperClassType = superTypes[0];
+
+                while (superTypes.length > 0 && !"java.lang.Object".equals(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
+                    if (RX_PRIMITIVE_CANONICAL_NAMES.contains(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
                         return true;
                     }
-
-                    // TODO: Check super values by migrating to Android Gradle plugin v3. Useful for InitialValueObservable, etc.
-                    //PsiType[] returnTypeSuperTypes = returnValueType.getSuperTypes();
-                    ////noinspection ForLoopReplaceableByForEach Don't want to create and throw Iterators when running lint on every method.
-                    //for (int i = 0; i < returnTypeSuperTypes.length; i++) {
-                    //    if (RX_PRIMITIVES.contains(returnTypeSuperTypes[i].getPresentableText())) {
-                    //        return true;
-                    //    }
-                    //}
-
-                    // TODO: Integrate this lint check with Android Studio. Should show warnings.
+                    nextSuperClassType = nextSuperClassType.getSuperTypes()[0];
                 }
 
                 return false;
             }
         };
+    }
+
+    // TODO: Test.
+    public static String removeTypeFromClassName(String className) {
+        int typeStartIndex = className.indexOf("<");
+        return typeStartIndex != -1
+                ? className.substring(0, typeStartIndex)
+                : className;
     }
 }

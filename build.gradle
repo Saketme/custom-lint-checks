@@ -3,6 +3,7 @@ apply plugin: 'java'
 version = '1.0.0'
 
 repositories {
+    google()
     jcenter()
 }
 
@@ -11,11 +12,15 @@ ext.versions = [
 ]
 
 dependencies {
-    compileOnly "com.android.tools.lint:lint-api:$versions.androidTools"
-    compileOnly "com.android.tools.lint:lint-checks:$versions.androidTools"
+    compile "com.android.tools.lint:lint-api:$versions.androidTools"
+    compile "com.android.tools.lint:lint-checks:$versions.androidTools"
+
+//    testCompile 'junit:junit:4.12'
+//    testCompile 'org.assertj:assertj-core:3.7.0'
+//    compile 'io.reactivex.rxjava2:rxjava:2.1.6'
 
     testImplementation "com.android.tools.lint:lint:${versions.androidTools}"
-    testImplementation "com.android.tools.lint:lint-checks:${versions.androidTools}"
+    testImplementation "com.android.tools.lint:lint-tests:${versions.androidTools}"
 }
 
 jar {
