@@ -113,7 +113,6 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
         };
     }
 
-    // TODO: Test.
     public static String removeTypeFromClassName(String className) {
         int typeStartIndex = className.indexOf("<");
         return typeStartIndex != -1
