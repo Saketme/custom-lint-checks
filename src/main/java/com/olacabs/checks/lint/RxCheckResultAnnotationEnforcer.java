@@ -28,7 +28,7 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
       "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
           + "@CheckReturn so that AndroidStudio shows a warning when the return value is not used.";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
-  public static final Severity SEVERITY = Severity.ERROR;
+  static final Severity SEVERITY = Severity.ERROR;
 
   private static final Set<String> RX_PRIMITIVE_CANONICAL_NAMES = new HashSet<>();
 
@@ -40,7 +40,7 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
     RX_PRIMITIVE_CANONICAL_NAMES.add("io.reactivex.Flowable");
   }
 
-  public static final Issue ISSUE = Issue.create(
+  static final Issue ISSUE = Issue.create(
       ISSUE_ID,
       ISSUE_TITLE,
       ISSUE_DESCRIPTION,
