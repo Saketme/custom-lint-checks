@@ -1,4 +1,4 @@
-package com.olacabs.checks.lint;
+package is.uncommon.checks;
 
 import com.android.tools.lint.client.api.IssueRegistry;
 import com.android.tools.lint.detector.api.Issue;

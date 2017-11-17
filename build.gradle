@@ -22,6 +22,6 @@ dependencies {
 jar {
   archiveName 'OlaChecks-v2.jar'
   manifest {
-    attributes 'Lint-Registry-v2': 'com.olacabs.checks.lint.LintIssueRegistry'
+    attributes 'Lint-Registry-v2': 'LintIssueRegistry'
   }
 }

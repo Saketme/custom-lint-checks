@@ -1,4 +1,4 @@
-package com.olacabs.checks.lint;
+package is.uncommon.checks;
 
 import static com.android.tools.lint.checks.infrastructure.TestFiles.java;
 import static com.android.tools.lint.checks.infrastructure.TestLintTask.lint;
