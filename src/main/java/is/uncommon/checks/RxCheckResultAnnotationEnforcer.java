@@ -26,7 +26,7 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
   private static final String ISSUE_TITLE = "Use @CheckResult";
   private static final String ISSUE_DESCRIPTION =
       "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
-          + "@CheckReturn so that AndroidStudio shows a warning when the return value is not used.";
+          + "@CheckResult so that AndroidStudio shows a warning when the return value is not used.";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
   static final Severity SEVERITY = Severity.ERROR;
 
@@ -113,7 +113,7 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
   /**
    * Convert {@code "io.reactivex.Observable<Object>"} to {@code "io.reactivex.Observable"}.
    */
-  public static String removeTypeFromClassName(String className) {
+  static String removeTypeFromClassName(String className) {
     int typeStartIndex = className.indexOf("<");
     return typeStartIndex != -1
         ? className.substring(0, typeStartIndex)
