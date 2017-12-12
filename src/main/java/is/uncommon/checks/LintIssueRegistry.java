@@ -2,7 +2,7 @@ package is.uncommon.checks;
 
 import com.android.tools.lint.client.api.IssueRegistry;
 import com.android.tools.lint.detector.api.Issue;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,6 +16,6 @@ public class LintIssueRegistry extends IssueRegistry {
 
   @Override
   public List<Issue> getIssues() {
-    return Collections.singletonList(RxCheckResultAnnotationEnforcer.ISSUE);
+    return Arrays.asList(RxCheckResultAnnotationEnforcer.ISSUE, ImplementsSerializableDetector.ISSUE);
   }
 }

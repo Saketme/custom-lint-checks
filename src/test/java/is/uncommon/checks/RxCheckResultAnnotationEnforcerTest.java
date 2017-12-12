@@ -52,7 +52,7 @@ public class RxCheckResultAnnotationEnforcerTest {
         .allowCompilationErrors()
         .issues(RxCheckResultAnnotationEnforcer.ISSUE)
         .run()
-        .expectCount(1, RxCheckResultAnnotationEnforcer.SEVERITY);
+        .expectCount(1, RxCheckResultAnnotationEnforcer.ISSUE_SEVERITY);
   }
 
   @Test
