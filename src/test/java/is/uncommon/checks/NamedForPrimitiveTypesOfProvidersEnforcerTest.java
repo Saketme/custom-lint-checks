@@ -55,6 +55,6 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
         .allowCompilationErrors()
         .issues(NamedForPrimitiveTypesOfProvidersEnforcer.ISSUE)
         .run()
-        .expectCount(1, RxCheckResultAnnotationEnforcer.SEVERITY);
+        .expectCount(1, NamedForPrimitiveTypesOfProvidersEnforcer.SEVERITY);
   }
 }
