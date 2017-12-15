@@ -23,12 +23,12 @@ import org.jetbrains.uast.UMethod;
 public class RxCheckResultAnnotationEnforcer extends Detector implements Detector.UastScanner {
 
   private static final String ISSUE_ID = RxCheckResultAnnotationEnforcer.class.getSimpleName();
-  private static final String ISSUE_TITLE = "Use @CheckResult";
-  private static final String ISSUE_DESCRIPTION =
-      "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
-          + "@CheckResult so that AndroidStudio shows a warning when the return value is not used.";
+  private static final String ISSUE_BRIEF_DESCRIPTION = "Use @CheckResult";
+  private static final String ISSUE_EXPLANATION = "It's easy to forget calling subscribe() on methods that return Rx primitives "
+      + "like Observable, Single, etc. Annotate this method with @CheckResult so that AndroidStudio shows a warning when the "
+      + "return value is not used.";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
-  static final Severity SEVERITY = Severity.ERROR;
+  static final Severity ISSUE_SEVERITY = Severity.ERROR;
 
   private static final Set<String> RX_PRIMITIVE_CANONICAL_NAMES = new HashSet<>();
 
@@ -42,16 +42,13 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
 
   static final Issue ISSUE = Issue.create(
       ISSUE_ID,
-      ISSUE_TITLE,
-      ISSUE_DESCRIPTION,
+      ISSUE_BRIEF_DESCRIPTION,
+      ISSUE_EXPLANATION,
       Category.CORRECTNESS,
       ISSUE_PRIORITY,
-      SEVERITY,
+      ISSUE_SEVERITY,
       new Implementation(RxCheckResultAnnotationEnforcer.class, Scope.JAVA_FILE_SCOPE)
   );
-
-  public RxCheckResultAnnotationEnforcer() {
-  }
 
   @Override
   public EnumSet<Scope> getApplicableFiles() {
