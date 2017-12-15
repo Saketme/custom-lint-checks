@@ -9,6 +9,7 @@ import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.intellij.psi.PsiType;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -21,14 +22,13 @@ import org.jetbrains.uast.UMethod;
  */
 public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implements Detector.UastScanner {
 
+  static final Severity SEVERITY = Severity.ERROR;
   private static final String ISSUE_ID = NamedForPrimitiveTypesOfProvidersEnforcer.class.getSimpleName();
   private static final String ISSUE_TITLE = "Use @CheckResult";
   private static final String ISSUE_DESCRIPTION =
       "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
           + "@CheckResult so that AndroidStudio shows a warning when the return value is not used.";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
-  static final Severity SEVERITY = Severity.ERROR;
-
   static final Issue ISSUE = Issue.create(
       ISSUE_ID,
       ISSUE_TITLE,
@@ -38,6 +38,7 @@ public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implemen
       SEVERITY,
       new Implementation(NamedForPrimitiveTypesOfProvidersEnforcer.class, Scope.JAVA_FILE_SCOPE)
   );
+  private final List<String> primitiveTypes = Arrays.asList("int", "boolean", "double");
 
   @Override
   public EnumSet<Scope> getApplicableFiles() {
@@ -54,25 +55,18 @@ public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implemen
     return new UElementHandler() {
       @Override
       public void visitClass(UClass uClass) {
-        super.visitClass(uClass);
-        uClass.getMethods();
-      }
-
-      @Override
-      public void visitMethod(UMethod method) {
-        if (method.getReturnType() == null || PsiType.VOID.equals(method.getReturnType())) {
-          // Constructor or void return type.
+        if (uClass.findAnnotation("Module") == null) {
           return;
         }
+        for (UMethod method : uClass.getMethods()) {
+          if (method.findAnnotation("Provides") != null) {
+            final PsiType returnType = method.getReturnType();
 
-        boolean isRxReturnType = false;
-        if (!isRxReturnType) {
-          return;
-        }
-
-        boolean isCheckReturnAnnotationMissing = method.findAnnotation("android.support.annotation.CheckResult") == null;
-        if (isCheckReturnAnnotationMissing) {
-          context.report(ISSUE, method, context.getLocation(method), "Should annotate return value with @CheckResult");
+            if (returnType != null && primitiveTypes.contains(returnType.getCanonicalText())) {
+              context.report(ISSUE, method, context.getLocation(method),
+                  "Should apply @Named for primitives");
+            }
+          }
         }
       }
     };

@@ -25,3 +25,5 @@ jar {
     attributes 'Lint-Registry-v2': 'LintIssueRegistry'
   }
 }
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
