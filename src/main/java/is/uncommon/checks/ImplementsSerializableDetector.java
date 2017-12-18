@@ -20,13 +20,12 @@ import org.jetbrains.uast.UElement;
  */
 public class ImplementsSerializableDetector extends Detector implements Detector.UastScanner {
 
+  static final Severity ISSUE_SEVERITY = Severity.ERROR;
   private static final String ISSUE_ID = ImplementsSerializableDetector.class.getSimpleName();
   private static final String ISSUE_BRIEF_DESCRIPTION = "Avoid using Serializable";
   private static final String ISSUE_EXPLANATION = "Serialization uses runtime reflection and should be avoided for favoring "
       + "performance. Prefer using Parcelable, Moshi, or anything else that involves generating an 'adapter' at compile time.";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
-  static final Severity ISSUE_SEVERITY = Severity.ERROR;
-
   static final Issue ISSUE = Issue.create(
       ISSUE_ID,
       ISSUE_BRIEF_DESCRIPTION,
@@ -54,8 +53,9 @@ public class ImplementsSerializableDetector extends Detector implements Detector
       public void visitClass(UClass uClass) {
         PsiClassType[] superTypes = uClass.getSuperTypes();
         for (PsiClassType superType : superTypes) {
-          if (superType.getCanonicalText().equals("Serializable")) {
-            context.report(ISSUE, uClass, context.getLocation((UElement) uClass), "Should not serialize objects using runtime reflection");
+          if ("java.io.Serializable".equals(superType.getCanonicalText())) {
+            context.report(ISSUE, uClass, context.getLocation((UElement) uClass),
+                "Do not implement Serializable. Use Parcelable/Moshi or anything else that involves generating an 'adapter' at compile time instead.");
           }
         }
       }
