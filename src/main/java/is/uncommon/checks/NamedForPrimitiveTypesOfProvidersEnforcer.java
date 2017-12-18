@@ -24,10 +24,8 @@ public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implemen
 
   static final Severity SEVERITY = Severity.ERROR;
   private static final String ISSUE_ID = NamedForPrimitiveTypesOfProvidersEnforcer.class.getSimpleName();
-  private static final String ISSUE_TITLE = "Use @CheckResult";
-  private static final String ISSUE_DESCRIPTION =
-      "It's easy to forget calling subscribe() on methods that return Rx primitives like Observable, Single, etc. Annotate this method with "
-          + "@CheckResult so that AndroidStudio shows a warning when the return value is not used.";
+  private static final String ISSUE_TITLE = "@Named for primitive types";
+  private static final String ISSUE_DESCRIPTION = "@Named for primitive types";
   private static final int ISSUE_PRIORITY = 10;   // Highest.
   static final Issue ISSUE = Issue.create(
       ISSUE_ID,
@@ -38,7 +36,14 @@ public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implemen
       SEVERITY,
       new Implementation(NamedForPrimitiveTypesOfProvidersEnforcer.class, Scope.JAVA_FILE_SCOPE)
   );
-  private final List<String> primitiveTypes = Arrays.asList("int", "boolean", "double");
+  private final List<String> primitiveTypes = Arrays.asList("byte",
+      "short",
+      "int",
+      "float",
+      "double",
+      "boolean",
+      "java.lang.String"
+  );
 
   @Override
   public EnumSet<Scope> getApplicableFiles() {
@@ -55,16 +60,18 @@ public class NamedForPrimitiveTypesOfProvidersEnforcer extends Detector implemen
     return new UElementHandler() {
       @Override
       public void visitClass(UClass uClass) {
-        if (uClass.findAnnotation("Module") == null) {
+        if (uClass.findAnnotation("dagger.Module") == null) {
           return;
         }
         for (UMethod method : uClass.getMethods()) {
-          if (method.findAnnotation("Provides") != null) {
+          if (method.findAnnotation("dagger.Provides") != null) {
             final PsiType returnType = method.getReturnType();
 
             if (returnType != null && primitiveTypes.contains(returnType.getCanonicalText())) {
-              context.report(ISSUE, method, context.getLocation(method),
-                  "Should apply @Named for primitives");
+              if (method.findAnnotation("javax.inject.Named") == null) {
+                context.report(ISSUE, method, context.getLocation(method),
+                    "Should apply @Named for primitives");
+              }
             }
           }
         }

@@ -12,12 +12,10 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
   public void whenCodeHasNoPrimitives_shouldPass() {
 
     @Language("JAVA") final String codeWithNoPrimitives = "package foo;"
-        + "import dagger.Module;\n"
-        + "import dagger.Provides;"
-        + "@Module\n"
+        + "@dagger.Module\n"
         + "public abstract class MainModule {\n"
         + "\n"
-        + "\t@Provides\n"
+        + "\t@dagger.Provides\n"
         + "\tstatic NonPrimitive provides() {\n"
         + "\t\treturn \"Unused Data\";\n"
         + "\t}\n"
@@ -41,14 +39,12 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
   public void whenCodeHasPrimitives_shouldFail() {
 
     @Language("JAVA") final String codeWithPrimitives = "package foo;"
-        + "import dagger.Module;\n"
-        + "import dagger.Provides;"
-        + "@Module\n"
+        + "@dagger.Module\n"
         + "public abstract class MainModule {\n"
         + "\n"
-        + "\t@Provides\n"
+        + "\t@dagger.Provides\n"
         + "\tstatic int providesUnusedData() {\n"
-        + "\t\treturn \"Unused Data\";\n"
+        + "\t\treturn 0;\n"
         + "\t}\n"
         + "\n"
         + "}";
@@ -60,5 +56,29 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
         .issues(NamedForPrimitiveTypesOfProvidersEnforcer.ISSUE)
         .run()
         .expectCount(1, NamedForPrimitiveTypesOfProvidersEnforcer.SEVERITY);
+  }
+
+  @Test
+  public void whenCodeHasPrimitivesAndNamed_thenPass() {
+
+    @Language("JAVA") final String codeWithPrimitives = "package foo;"
+        + "@dagger.Module\n"
+        + "public abstract class MainModule {\n"
+        + "\n"
+        + "\t@dagger.Provides\n"
+        + "\t@javax.inject.Named(\"\")\n"
+        + "\tstatic int providesUnusedData() {\n"
+        + "\t\treturn 0;\n"
+        + "\t}\n"
+        + "\n"
+        + "}";
+
+    lint()
+        .allowMissingSdk()
+        .files(java(codeWithPrimitives))
+        .allowCompilationErrors()
+        .issues(NamedForPrimitiveTypesOfProvidersEnforcer.ISSUE)
+        .run()
+        .expectClean();
   }
 }
