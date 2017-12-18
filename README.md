@@ -1,11 +1,19 @@
 # Lint Checks
-Flags methods returning Rx primitives (Observable, Single, etc.) that aren't annotated with @CheckResult annotation.
+
+1. Flags methods returning Rx primitives (Observable, Single, etc.) that aren't annotated with @CheckResult annotation.
 
     @CheckResult
     public Observable<T> streamTextChanges() {
       ...
     }
 
+2. Providers that return primitive types should be named
+
+    @Provides
+    @Named(FLAG_FOR_CHECKS)
+    static int flagForChecks() {
+      return 0;
+    }
 
 ## Gotchas
 
