@@ -17,6 +17,7 @@ public class LintIssueRegistry extends IssueRegistry {
   @Override
   public List<Issue> getIssues() {
     return Arrays.asList(
+        RxCheckResultAnnotationEnforcer.ISSUE,
         NamedForPrimitiveTypesOfProvidersEnforcer.ISSUE,
         ImplementsSerializableDetector.ISSUE
     );

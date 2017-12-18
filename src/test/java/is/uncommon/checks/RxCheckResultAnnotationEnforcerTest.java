@@ -74,4 +74,23 @@ public class RxCheckResultAnnotationEnforcerTest {
     String nameSansType2 = RxCheckResultAnnotationEnforcer.removeTypeFromClassName("io.reactivex.Observable");
     assertEquals(nameSansType2, "io.reactivex.Observable");
   }
+
+  @Test
+  public void whenCodeHasNoRxPrimitive_shouldPass() {
+
+    @Language("JAVA") final String codeWithNoRxPrimitive = "package foo;\n"
+        + "public class PoopClass {\n"
+        + "  private java.math.BigInteger doSomething() {\n"
+        + "    return null;\n"
+        + "  }\n"
+        + "}\n";
+
+    lint()
+        .allowMissingSdk()
+        .files(java(codeWithNoRxPrimitive))
+        .allowCompilationErrors()
+        .issues(RxCheckResultAnnotationEnforcer.ISSUE)
+        .run()
+        .expectClean();
+  }
 }

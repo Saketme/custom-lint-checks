@@ -93,13 +93,14 @@ public class RxCheckResultAnnotationEnforcer extends Detector implements Detecto
         // PsiType#getSuperTypes() returns the super class and any interfaces this PsiType implements.
         // We're assuming that the super class will always be present in the 0th index.
         PsiType[] superTypes = psiType.getSuperTypes();
-        PsiType nextSuperClassType = superTypes[0];
 
-        while (superTypes.length > 0 && !"java.lang.Object".equals(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
+        while (superTypes.length > 0) {
+          final PsiType nextSuperClassType = superTypes[0];
+
           if (RX_PRIMITIVE_CANONICAL_NAMES.contains(removeTypeFromClassName(nextSuperClassType.getCanonicalText()))) {
             return true;
           }
-          nextSuperClassType = nextSuperClassType.getSuperTypes()[0];
+          superTypes = nextSuperClassType.getSuperTypes();
         }
 
         return false;
