@@ -12,6 +12,8 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
   public void whenCodeHasNoPrimitives_shouldPass() {
 
     @Language("JAVA") final String codeWithNoPrimitives = "package foo;"
+        + "import dagger.Module;\n"
+        + "import dagger.Provides;"
         + "@Module\n"
         + "public abstract class MainModule {\n"
         + "\n"
@@ -39,6 +41,8 @@ public class NamedForPrimitiveTypesOfProvidersEnforcerTest {
   public void whenCodeHasPrimitives_shouldFail() {
 
     @Language("JAVA") final String codeWithPrimitives = "package foo;"
+        + "import dagger.Module;\n"
+        + "import dagger.Provides;"
         + "@Module\n"
         + "public abstract class MainModule {\n"
         + "\n"

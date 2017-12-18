@@ -22,8 +22,9 @@ dependencies {
 jar {
   archiveName 'OlaChecks-v2.jar'
   manifest {
-    attributes 'Lint-Registry-v2': 'LintIssueRegistry'
+    attributes 'Lint-Registry-v2': 'is.uncommon.checks.LintIssueRegistry'
   }
 }
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
