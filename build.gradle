@@ -8,15 +8,10 @@ repositories {
   jcenter()
 }
 
-ext.versions = [
-    androidTools: '26.1.0-alpha07',
-    kotlin_version: '1.2.10',
-]
-
 dependencies {
   compile "com.android.tools.lint:lint-api:$versions.androidTools"
   compile "com.android.tools.lint:lint-checks:$versions.androidTools"
-  compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$versions.kotlin_version"
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$versions.kotlin_version"
 
   testCompile "com.android.tools.lint:lint:${versions.androidTools}"
   testCompile "com.android.tools.lint:lint-tests:${versions.androidTools}"
@@ -25,7 +20,7 @@ dependencies {
 jar {
   archiveName 'lint.jar'
   manifest {
-    attributes 'Lint-Registry': 'is.uncommon.checks.LintIssueRegistry'
+    attributes 'Lint-Registry-v2': 'is.uncommon.checks.LintIssueRegistry'
   }
 }
 
@@ -33,10 +28,15 @@ targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
 buildscript {
+
+  ext.versions = [
+      androidTools: '26.1.0-alpha07',
+      kotlin_version: '1.2.10',
+  ]
   repositories {
     mavenCentral()
   }
   dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.10"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin_version"
   }
 }

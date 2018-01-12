@@ -3,6 +3,7 @@ package `is`.uncommon.checks
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import org.jetbrains.uast.UCallExpression
 import org.junit.Test
 
 class RxUsedEnforcerTest {
@@ -30,14 +31,17 @@ class RxUsedEnforcerTest {
           }
 
         """))
-        .issues(RxUsedEnforcer.ISSUE)
+        .issues(RxUsedEnforcerJ.ISSUE)
         .run()
         .expect("""
-src/is/uncommon/checks/TestClazz.java:14: Error: Make use of the returned Rx type [RxUsedEnforcer]
+src/is/uncommon/checks/TestClazz.java:14: Error: Make use of the returned Rx type [RxUsedEnforcerJ]
               rxReturningFunction();
               ~~~~~~~~~~~~~~~~~~~
 1 errors, 0 warnings
         """)
+
+    val node: UCallExpression? = null
+    node?.psi
   }
 
   @Test
@@ -55,7 +59,7 @@ src/is/uncommon/checks/TestClazz.java:14: Error: Make use of the returned Rx typ
           }
 
         """))
-        .issues(RxUsedEnforcer.ISSUE)
+        .issues(RxUsedEnforcerJ.ISSUE)
         .run()
         .expect("No warnings.")
   }
